@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YTVA Downloader</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" type="image/x-icon">
+</head>
+
+<body>
+    <div class="form-container">
+        <h1>YTVA Downloader</h1>
+        <form action="/download" method="post">
+            <label for="url">Enter YouTube URL:</label>
+            <input type="text" id="url" name="url" required>
+
+            <div class="radio-group">
+                <label>
+                    <input type="radio" id="video" name="type" value="video" required> Video
+                </label>
+                <label>
+                    <input type="radio" id="audio" name="type" value="audio" required> Audio
+                </label>
+            </div>
+
+            <div id="video-quality" style="display: none;">
+                <label for="quality">Select Video Quality:</label>
+                <select id="quality" name="quality">
+                    <option value="720">720p</option>
+                    <option value="1080">1080p</option>
+                </select>
+            </div>
+            <button type="submit">Download</button>
+        </form>
+    </div>
+
+    <script>
+        const videoOption = document.getElementById('video');
+        const videoQualityDiv = document.getElementById('video-quality');
+
+        videoOption.addEventListener('change', () => {
+            videoQualityDiv.style.display = 'block';
+        });
+
+        document.getElementById('audio').addEventListener('change', () => {
+            videoQualityDiv.style.display = 'none';
+        });
+    </script>
+</body>
+
+</html>
