@@ -5,31 +5,38 @@ import os
 app = Flask(__name__)
 
 # Ensure the 'temp' directory exists
-TEMP_DIR = 'temp'
-if not os.path.exists(TEMP_DIR):
-    os.makedirs(TEMP_DIR, exist_ok=True)
+if not os.path.exists('temp'):
+    os.makedirs('temp', exist_ok=True)
 
 # Video download function
 def download_video(url, video_quality):
     try:
+        # Check for cookies.txt
+        cookiefile = 'cookies.txt'
+        if not os.path.exists(cookiefile):
+            raise FileNotFoundError("Cookie file 'cookies.txt' not found.")
+
         ydl_opts = {
             'format': f'bestvideo[height={video_quality}]+bestaudio/best',
-            'outtmpl': f'{TEMP_DIR}/%(title)s.%(ext)s',
+            'outtmpl': f'temp/%(title)s.%(ext)s',
             'merge_output_format': 'mp4',
-            'cookies': 'cookies.txt',  # Replace with actual path to cookies.txt
+            'cookiefile': cookiefile,  # Use the path to your cookies file
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
-            filename = ydl.prepare_filename(info).replace('.webm', '.mp4')  # Ensure mp4 extension
+            filename = ydl.prepare_filename(info).replace('.webm', '.mp4')  # Adjust for mp4
             return filename
-    except yt_dlp.utils.DownloadError as e:
-        raise RuntimeError(f"Failed to download video. Check browser cookies setup: {str(e)}")
     except Exception as e:
-        raise RuntimeError(f"Unexpected error during video download: {str(e)}")
+        raise RuntimeError(f"Failed to download video: {str(e)}")
 
 # Audio download function
 def download_audio(url):
     try:
+        # Check for cookies.txt
+        cookiefile = 'cookies.txt'
+        if not os.path.exists(cookiefile):
+            raise FileNotFoundError("Cookie file 'cookies.txt' not found.")
+
         ydl_opts = {
             'format': 'bestaudio/best',
             'postprocessors': [{
@@ -37,17 +44,15 @@ def download_audio(url):
                 'preferredcodec': 'mp3',
                 'preferredquality': '256',
             }],
-            'outtmpl': f'{TEMP_DIR}/%(title)s.%(ext)s',
-            'cookies': 'cookies.txt',  # Replace with actual path to cookies.txt
+            'outtmpl': f'temp/%(title)s.%(ext)s',
+            'cookiefile': cookiefile,  # Use the path to your cookies file
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
-            filename = ydl.prepare_filename(info).replace('.webm', '.mp3')  # Ensure mp3 extension
+            filename = ydl.prepare_filename(info).replace('.webm', '.mp3')  # Adjust for mp3
             return filename
-    except yt_dlp.utils.DownloadError as e:
-        raise RuntimeError(f"Failed to download audio. Check browser cookies setup: {str(e)}")
     except Exception as e:
-        raise RuntimeError(f"Unexpected error during audio download: {str(e)}")
+        raise RuntimeError(f"Failed to download audio: {str(e)}")
 
 @app.route('/')
 def index():
@@ -56,24 +61,21 @@ def index():
 @app.route('/download', methods=['POST'])
 def download():
     try:
-        url = request.form.get('url')
-        download_type = request.form.get('type')
+        url = request.form['url']
+        download_type = request.form['type']
         quality = request.form.get('quality', '1080')  # Default to 1080p if not specified
-
-        if not url or not download_type:
-            return jsonify({"error": "URL and download type are required."}), 400
 
         if download_type not in ['video', 'audio']:
             return jsonify({"error": "Invalid download type."}), 400
 
-        # Download the requested file
-        filename = (
-            download_video(url, quality) if download_type == 'video' else download_audio(url)
-        )
+        if download_type == 'video':
+            filename = download_video(url, quality)
+        else:
+            filename = download_audio(url)
 
         if os.path.exists(filename):
             response = send_file(filename, as_attachment=True)
-            os.remove(filename)  # Clean up the file after sending
+            os.remove(filename)  # Clean up after sending the file
             return response
         else:
             return jsonify({"error": "File not found after download."}), 404
