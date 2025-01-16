@@ -42,8 +42,9 @@ def download():
     download_type = request.form['type']
     quality = request.form.get('quality')
 
+    # Ensure the 'temp' directory exists
     if not os.path.exists('temp'):
-        os.makedirs('temp')
+        os.makedirs('temp', exist_ok=True)
 
     if download_type == 'video':
         filename = download_video(url, quality)
@@ -51,6 +52,12 @@ def download():
         filename = download_audio(url)
     else:
         return "Invalid download type."
+
+    # Check if the file exists and send it
+    if os.path.exists(filename):
+        return send_file(filename, as_attachment=True)
+    else:
+        return "File not found", 404
 
     return send_file(filename, as_attachment=True)
 
