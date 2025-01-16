@@ -10,7 +10,7 @@ def download_video(url, video_quality):
         'format': f'bestvideo[height={video_quality}]+bestaudio/best',
         'outtmpl': f'temp/%(title)s.%(ext)s',
         'merge_output_format': 'mp4',
-        'cookiefile': 'cookies.txt',  # Use the path to your cookies file
+        'cookies-from-browser': True,  # Enable cookies from the browser (no need for cookies.txt)
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
@@ -27,7 +27,7 @@ def download_audio(url):
             'preferredquality': '256',
         }],
         'outtmpl': f'temp/%(title)s.%(ext)s',
-        'cookiefile': 'cookies.txt',  # Use the path to your cookies file
+        'cookies-from-browser': True,  # Enable cookies from the browser (no need for cookies.txt)
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
