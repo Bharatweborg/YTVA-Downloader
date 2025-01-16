@@ -16,16 +16,16 @@ def download_video(url, video_quality):
             'format': f'bestvideo[height={video_quality}]+bestaudio/best',
             'outtmpl': f'{TEMP_DIR}/%(title)s.%(ext)s',
             'merge_output_format': 'mp4',
-            'cookiesfrombrowser': {
-                'browser': 'chrome',  # Replace with 'firefox' or 'edge' if needed
-            },
+            'cookies': 'cookies.txt',  # Directly specify the path to the cookies.txt file
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             filename = ydl.prepare_filename(info).replace('.webm', '.mp4')  # Ensure mp4 extension
             return filename
+    except yt_dlp.utils.DownloadError as e:
+        raise RuntimeError(f"Failed to download video. Check browser cookies setup: {str(e)}")
     except Exception as e:
-        raise RuntimeError(f"Failed to download video: {str(e)}")
+        raise RuntimeError(f"Unexpected error during video download: {str(e)}")
 
 # Audio download function
 def download_audio(url):
@@ -38,16 +38,16 @@ def download_audio(url):
                 'preferredquality': '256',
             }],
             'outtmpl': f'{TEMP_DIR}/%(title)s.%(ext)s',
-            'cookiesfrombrowser': {
-                'browser': 'chrome',  # Replace with 'firefox' or 'edge' if needed
-            },
+            'cookies': 'cookies.txt',  # Directly specify the path to the cookies.txt file
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             filename = ydl.prepare_filename(info).replace('.webm', '.mp3')  # Ensure mp3 extension
             return filename
+    except yt_dlp.utils.DownloadError as e:
+        raise RuntimeError(f"Failed to download audio. Check browser cookies setup: {str(e)}")
     except Exception as e:
-        raise RuntimeError(f"Failed to download audio: {str(e)}")
+        raise RuntimeError(f"Unexpected error during audio download: {str(e)}")
 
 @app.route('/')
 def index():
