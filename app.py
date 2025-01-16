@@ -10,12 +10,16 @@ def download_video(url, video_quality):
         'format': f'bestvideo[height={video_quality}]+bestaudio/best',
         'outtmpl': f'temp/%(title)s.%(ext)s',
         'merge_output_format': 'mp4',
-        'cookies-from-browser': True,  # Enable cookies from the browser (no need for cookies.txt)
+        'cookies-from-browser': True,  # Enable cookies from the browser
     }
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        filename = ydl.prepare_filename(info).replace('.webm', '.mp4')  # Adjust for mp4
-        return filename
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+            filename = ydl.prepare_filename(info).replace('.webm', '.mp4')  # Adjust for mp4
+            return filename
+    except yt_dlp.utils.DownloadError as e:
+        print(f"Download Error: {e}")
+        return None
 
 # Audio download function
 def download_audio(url):
@@ -27,12 +31,16 @@ def download_audio(url):
             'preferredquality': '256',
         }],
         'outtmpl': f'temp/%(title)s.%(ext)s',
-        'cookies-from-browser': True,  # Enable cookies from the browser (no need for cookies.txt)
+        'cookies-from-browser': True,  # Enable cookies from the browser
     }
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        filename = ydl.prepare_filename(info).replace('.webm', '.mp3')  # Adjust for mp3
-        return filename
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+            filename = ydl.prepare_filename(info).replace('.webm', '.mp3')  # Adjust for mp3
+            return filename
+    except yt_dlp.utils.DownloadError as e:
+        print(f"Download Error: {e}")
+        return None
 
 @app.route('/')
 def index():
@@ -56,12 +64,10 @@ def download():
         return "Invalid download type."
 
     # Check if the file exists and send it
-    if os.path.exists(filename):
+    if filename and os.path.exists(filename):
         return send_file(filename, as_attachment=True)
     else:
         return "File not found", 404
-
-    return send_file(filename, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
