@@ -8,13 +8,19 @@ app = Flask(__name__)
 if not os.path.exists('temp'):
     os.makedirs('temp', exist_ok=True)
 
+# Path for the cookie file
+cookiefile = 'cookies.txt'
+
+# Helper function to check for cookies file
+def check_cookies():
+    if not os.path.exists(cookiefile):
+        raise FileNotFoundError("Cookie file 'cookies.txt' not found. Please export your cookies from the browser.")
+
 # Video download function
 def download_video(url, video_quality):
     try:
         # Check for cookies.txt
-        cookiefile = 'cookies.txt'
-        if not os.path.exists(cookiefile):
-            raise FileNotFoundError("Cookie file 'cookies.txt' not found.")
+        check_cookies()
 
         ydl_opts = {
             'format': f'bestvideo[height={video_quality}]+bestaudio/best',
@@ -33,9 +39,7 @@ def download_video(url, video_quality):
 def download_audio(url):
     try:
         # Check for cookies.txt
-        cookiefile = 'cookies.txt'
-        if not os.path.exists(cookiefile):
-            raise FileNotFoundError("Cookie file 'cookies.txt' not found.")
+        check_cookies()
 
         ydl_opts = {
             'format': 'bestaudio/best',
@@ -80,6 +84,8 @@ def download():
         else:
             return jsonify({"error": "File not found after download."}), 404
 
+    except FileNotFoundError as e:
+        return jsonify({"error": str(e)}), 400
     except RuntimeError as e:
         return jsonify({"error": str(e)}), 500
     except Exception as e:
