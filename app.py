@@ -10,7 +10,7 @@ def download_video(url, video_quality):
         'format': f'bestvideo[height={video_quality}]+bestaudio/best',
         'outtmpl': f'temp/%(title)s.%(ext)s',
         'merge_output_format': 'mp4',
-        'cookies-from-browser': True,  # Enable cookies from the browser
+        'cookies-from-browser': True,  # Make sure this flag is enabled
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
